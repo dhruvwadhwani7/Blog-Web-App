@@ -18,24 +18,28 @@ import Navbar from './components/Navbar.jsx'
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/create" element={<CreateBlog />} />
-        <Route path="/blog/:id" element={<ViewBlog />} />
-        <Route path="/saved" element={<SavedBlogs />} />
-        <Route path="/profile/:id" element={<Profile />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<UserList />} />
-        <Route path="/admin/stats" element={<BlogStats />} />
-        <Route path="/admin/reports" element={<ReportedContent />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
-    </Router>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <Router>
+        <Navbar />
+        <main className="max-w-5xl mx-auto px-4 py-6">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/create" element={<CreateBlog />} />
+            <Route path="/blog/:id" element={<ViewBlog />} />
+            <Route path="/saved" element={<SavedBlogs />} />
+            <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<UserList />} />
+            <Route path="/admin/stats" element={<BlogStats />} />
+            <Route path="/admin/reports" element={<ReportedContent />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </Router>
+    </div>
   )
 }
 
