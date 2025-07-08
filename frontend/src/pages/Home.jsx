@@ -1,11 +1,10 @@
-// Home page: displays blog feed
 import React from 'react'
+import Banner from '../Components/Banner'
 
 const Home = () => {
   return (
     <div>
-      <h2>Welcome to the Blog App!</h2>
-      <p>Browse the latest blogs, create your own, and connect with others.</p>
+        <Banner/>
     </div>
   )
 }
