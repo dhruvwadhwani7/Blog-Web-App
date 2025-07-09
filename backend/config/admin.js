@@ -11,8 +11,9 @@ const ADMIN_CREDENTIALS = [
   }
 ];
 
-exports.isAdmin = (email, password) => {
+export const isAdmin = (email, password) => {
   return ADMIN_CREDENTIALS.find(
     admin => admin.email === email && admin.password === password
   );
 };
+
