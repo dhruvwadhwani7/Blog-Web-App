@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js'
 import cors from 'cors';
+import path from 'path';
+import { protect } from './middleware/authMiddleware.js';
 
 dotenv.config();
 
@@ -21,7 +23,10 @@ app.use(express.json());
 connectDB();
 
 app.use('/api/auth', authRoutes);
-
+app.get('/api/auth/profile', protect, (req, res) => {
+  res.json({ success: true, user: req.user });
+});
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.get('/', (req, res) => {
   res.send('API is running...');
 });

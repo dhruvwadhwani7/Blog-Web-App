@@ -75,3 +75,48 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 };
+
+export const getProfile = (req, res) => {
+  res.json({ user: req.user });
+};
+
+
+export const updateUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, email, phone, bio } = req.body;
+
+    const updateFields = {
+      ...(name && { name }),
+      ...(email && { email }),
+      ...(phone && { phone }),
+      ...(bio && { bio }),
+    };
+
+    if (req.file) {
+      updateFields.avatar = `/uploads/${req.file.filename}`; // Relative path to image
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateFields, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      avatar: updatedUser.avatar,
+      bio: updatedUser.bio,
+      role: updatedUser.role,
+    });
+  } catch (err) {
+    console.error('User update failed:', err);
+    res.status(500).json({ message: 'Failed to update user', error: err.message });
+  }
+};

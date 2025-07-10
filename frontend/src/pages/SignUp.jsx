@@ -60,7 +60,7 @@ const SignUp = () => {
     
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="grid grid-cols-1 md:grid-cols-2 bg-white shadow-lg w-full max-w-4xl overflow-hidden mb-15">
+      <div className="grid grid-cols-1 md:grid-cols-2 bg-white shadow-lg w-full max-w-4xl overflow-hidden mb-20">
         {/* Left: Image Section */}
         <div className="hidden md:block">
            <img

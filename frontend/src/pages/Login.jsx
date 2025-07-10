@@ -35,10 +35,11 @@ const [formData, setFormData] = useState({ email: '', password: '' });
     if (user.role === 'admin') {
       navigate('/admin');
     } else {
-      navigate('/');
+      navigate('/profile');
     }
   }
 }, [user, token, navigate]);
+
 useEffect(() => {
   if (error) {
     toast.error(error, { autoClose: 3000 });

@@ -16,8 +16,8 @@ const categories = [
         description: "Stay updated with stories, highlights, and key moments from the world of sports and competition.",
     },
     {
-        title: "Culture",
-        description: "Dive into unique perspectives, powerful stories, and evolving trends that shape art, heritage, and culture today.",
+        title: "Travel",
+        description: "Embark on unforgettable journeys, discover cultures through vivid travel stories and guides from around the world.",
     },
     {
         title: "Tech",
