@@ -1,12 +1,22 @@
-// Blog routes: CRUD for blogs
-const express = require('express')
-const router = express.Router()
-const blogController = require('../controllers/blogController')
+import express from 'express';
+import {
+  createBlog,
+  updateBlog,
+  deleteBlog,
+  getAllBlogs,
+  getBlogById,
+  getBlogsByUser,
+  upload
+} from '../controllers/blogController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
-router.post('/', blogController.createBlog)
-router.get('/', blogController.getBlogs)
-router.get('/:id', blogController.getBlog)
-router.put('/:id', blogController.updateBlog)
-router.delete('/:id', blogController.deleteBlog)
+const router = express.Router();
 
-module.exports = router
+router.post('/', protect, upload.array('media', 5), createBlog);
+router.put('/:id', protect, upload.array('media', 5), updateBlog);
+router.delete('/:id', protect, deleteBlog);
+router.get('/', getAllBlogs);
+router.get('/my-blogs', protect, getBlogsByUser);
+router.get('/:id', getBlogById);
+
+export default router;

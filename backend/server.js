@@ -1,7 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-import authRoutes from './routes/authRoutes.js'
+import authRoutes from './routes/authRoutes.js';
+import blogRoutes from './routes/blogRoutes.js'
 import cors from 'cors';
 import path from 'path';
 import { protect } from './middleware/authMiddleware.js';
@@ -23,6 +24,7 @@ app.use(express.json());
 connectDB();
 
 app.use('/api/auth', authRoutes);
+app.use('/api/blogs', blogRoutes);
 app.get('/api/auth/profile', protect, (req, res) => {
   res.json({ success: true, user: req.user });
 });

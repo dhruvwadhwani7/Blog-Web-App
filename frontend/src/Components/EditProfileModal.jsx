@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { X, Save } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { updateUser } from '../redux/authSlice';
 
 export default function EditProfileModal({ user, closeModal }) {
- const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
     const [formData, setFormData] = useState({
         name: user?.name || '',
@@ -13,7 +13,7 @@ export default function EditProfileModal({ user, closeModal }) {
         phone: user?.phone || '',
         bio: user?.bio || '',
         avatar: null,
-        avatarPreview: user?.avatar ?  `http://localhost:5000${user.avatar}` : null,
+        avatarPreview: user?.avatar ? `http://localhost:5000${user.avatar}` : null,
     });
 
     const handleChange = (e) => {
@@ -31,6 +31,8 @@ export default function EditProfileModal({ user, closeModal }) {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
+
+    console.log(user);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -54,9 +56,8 @@ export default function EditProfileModal({ user, closeModal }) {
 
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white w-full max-w-md p-6 relative">
-                {/* Close Button */}
                 <button
                     onClick={closeModal}
                     className="absolute top-3 right-3 text-gray-500 hover:text-black"
@@ -71,7 +72,6 @@ export default function EditProfileModal({ user, closeModal }) {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="flex flex-col items-center justify-center gap-2">
-                        {/* Profile Picture Preview */}
                         <div className="w-16 h-16 rounded-full overflow-hidden border">
                             {formData.avatarPreview ? (
                                 <img
@@ -85,8 +85,6 @@ export default function EditProfileModal({ user, closeModal }) {
                                 </div>
                             )}
                         </div>
-
-                        {/* Change Avatar Link BELOW the image */}
                         <label className="text-bold cursor-pointer italic  font-avenir" style={{ color: '#b4552c' }}>
                             Change Profile Picture
                             <input
@@ -144,10 +142,6 @@ export default function EditProfileModal({ user, closeModal }) {
                             rows={3}
                         />
                     </div>
-
-
-
-
                     <button
                         type="submit"
                         style={{ backgroundColor: "#b4552c" }}

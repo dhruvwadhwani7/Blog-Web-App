@@ -4,7 +4,7 @@ import { isAdmin } from '../config/admin.js';
 import jwt from 'jsonwebtoken';
 
 export const registerUser = async (req, res) => {
-  const { name, email, phone, password, avatar, bio, role } = req.body; 
+  const { name, email, phone, password, avatar, bio, role } = req.body;
 
   try {
     const existing = await User.findOne({ email });
@@ -12,13 +12,13 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
-    const user = await User.create({ name, email, phone, password, avatar, bio, role }); 
+    const user = await User.create({ name, email, phone, password, avatar, bio, role });
     res.status(201).json({
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone, 
+        phone: user.phone,
         role: user.role,
       },
       token: generateToken(user),
@@ -31,7 +31,7 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
-  
+
   const admin = isAdmin(email, password);
   if (admin) {
     const token = jwt.sign(
@@ -66,7 +66,7 @@ export const loginUser = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone, 
+        phone: user.phone,
         role: user.role,
       },
       token,
@@ -86,15 +86,15 @@ export const updateUser = async (req, res) => {
     const userId = req.user.id;
     const { name, email, phone, bio } = req.body;
 
-    const updateFields = {
-      ...(name && { name }),
-      ...(email && { email }),
-      ...(phone && { phone }),
-      ...(bio && { bio }),
-    };
+    const updateFields = {};
+    if (name !== undefined) updateFields.name = name;
+    if (email !== undefined) updateFields.email = email;
+    if (phone !== undefined) updateFields.phone = phone;
+    if (bio !== undefined) updateFields.bio = bio;
+    if (req.file) updateFields.avatar = `/uploads/${req.file.filename}`;
 
     if (req.file) {
-      updateFields.avatar = `/uploads/${req.file.filename}`; // Relative path to image
+      updateFields.avatar = `/uploads/${req.file.filename}`;
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updateFields, {

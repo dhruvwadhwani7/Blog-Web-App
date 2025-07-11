@@ -10,7 +10,6 @@ const initialState = {
   error: null,
 };
 
-// Register
 export const registerUser = createAsyncThunk(
   'auth/register',
   async ({ name, email, phone, password }, thunkAPI) => {
@@ -36,7 +35,6 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Login
 export const loginUser = createAsyncThunk(
   'auth/login',
   async ({ email, password }, thunkAPI) => {
@@ -60,7 +58,6 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Load user from token
 export const loadUserFromToken = createAsyncThunk(
   'auth/profile',
   async (_, thunkAPI) => {
@@ -84,7 +81,7 @@ export const loadUserFromToken = createAsyncThunk(
 );
 
 export const updateUser = createAsyncThunk(
-  'auth/updateUser',
+  'auth/update',
   async (formData, thunkAPI) => {
     try {
       const token = localStorage.getItem('token');
@@ -121,7 +118,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -135,8 +131,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -162,7 +156,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Load from Token
       .addCase(loadUserFromToken.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -174,8 +167,6 @@ const authSlice = createSlice({
       .addCase(loadUserFromToken.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-
-        // Optional: only clear if token is expired/invalid
         state.token = null;
         state.user = null;
         localStorage.removeItem('token');
