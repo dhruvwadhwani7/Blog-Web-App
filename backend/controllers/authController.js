@@ -68,6 +68,8 @@ export const loginUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        avatar: user.avatar,
+        bio: user.bio
       },
       token,
     });
@@ -76,8 +78,15 @@ export const loginUser = async (req, res) => {
   }
 };
 
-export const getProfile = (req, res) => {
-  res.json({ user: req.user });
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load profile', error: err.message });
+  }
 };
 
 

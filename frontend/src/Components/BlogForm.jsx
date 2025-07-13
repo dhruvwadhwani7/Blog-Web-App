@@ -39,6 +39,10 @@ const BlogForm = () => {
       toast.error('Blog content cannot be empty!');
       return;
     }
+    if (formData.media.length === 0) {
+      toast.error('Please upload at least one media file!');
+      return;
+    }
 
     const data = new FormData();
     data.append('title', formData.title);
@@ -121,12 +125,12 @@ const BlogForm = () => {
           {/* <label className="block text-gray-700 mb-5 font-light font-avenir">
             Drop Us a Note *
           </label> */}
-          <div className=" border bg-transparent outline-none border-gray-500 overflow-hidden">
+          <div className=" border bg-transparent outline-none border-gray-500 overflow-hidden text-gray-700">
             <ReactQuill
               theme="snow"
               value={formData.content}
               onChange={handleContentChange}
-              className="  bg-[#fdeeea] h-40"
+              className="  bg-[#fdeeea] h-40 text-gray-700"
               placeholder="Type your thoughts here..."
             />
           </div>
@@ -148,6 +152,13 @@ const BlogForm = () => {
             onChange={handleMediaChange}
             className="hidden bg-[#fdeeea]"
           />
+          {formData.media.length > 0 && (
+    <ul className="mt-3 text-sm text-gray-700 italic list-disc pl-6">
+      {Array.from(formData.media).map((file, index) => (
+        <li key={index}>{file.name}</li>
+      ))}
+    </ul>
+  )}
         </div>
         <button
           type="submit"

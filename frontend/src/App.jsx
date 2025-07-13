@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loadUserFromToken } from './redux/authSlice';
 import { useEffect } from 'react';
 import Profile from './pages/Profile';
+import MyBlog from './pages/MyBlog';
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/signin" element={<Login />} />
           <Route path="/admin" element={<Admin />} />
           <Route path='/profile' element={<Profile/>}/>
+           <Route path='/my-blog' element={<MyBlog/>}/>
       </Routes>
       <ToastContainer position="bottom-right" autoClose={3000} />
     </Router>
