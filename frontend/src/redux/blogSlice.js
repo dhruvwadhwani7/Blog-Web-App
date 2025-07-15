@@ -2,22 +2,21 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/blogs';
-const token = () => localStorage.getItem('token');
 
-const authHeader = {
+const authHeader = () => ({
   headers: {
-    Authorization: `Bearer ${token()}`,
+    Authorization: `Bearer ${localStorage.getItem('token')}`,
   }
-};
+});
 
 export const createBlog = createAsyncThunk(
   'blogs/create',
   async (formData, thunkAPI) => {
     try {
       const res = await axios.post(API_URL, formData, {
-        ...authHeader,
+        ...authHeader(),
         headers: {
-          ...authHeader.headers,
+          ...authHeader().headers,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -33,9 +32,9 @@ export const updateBlog = createAsyncThunk(
   async ({ id, formData }, thunkAPI) => {
     try {
       const res = await axios.put(`${API_URL}/${id}`, formData, {
-        ...authHeader,
+        ...authHeader(),
         headers: {
-          ...authHeader.headers,
+          ...authHeader().headers,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -50,13 +49,14 @@ export const deleteBlog = createAsyncThunk(
   'blogs/delete',
   async (id, thunkAPI) => {
     try {
-      await axios.delete(`${API_URL}/${id}`, authHeader);
+      await axios.delete(`${API_URL}/${id}`, authHeader());
       return id;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || 'Delete failed');
     }
   }
 );
+
 export const fetchAllBlogs = createAsyncThunk(
   'blogs/fetchAll',
   async (_, thunkAPI) => {
@@ -73,13 +73,14 @@ export const fetchMyBlogs = createAsyncThunk(
   'blogs/fetchMine',
   async (_, thunkAPI) => {
     try {
-      const res = await axios.get(`${API_URL}/my-blogs`, authHeader);
+      const res = await axios.get(`${API_URL}/my-blogs`, authHeader());
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || 'Fetch failed');
     }
   }
 );
+
 export const fetchBlogById = createAsyncThunk(
   'blogs/fetchById',
   async (id, thunkAPI) => {
@@ -107,6 +108,14 @@ const blogSlice = createSlice({
       state.success = false;
       state.error = null;
     },
+    clearState: (state) => {
+      state.blogs = [];
+      state.myBlogs = [];
+      state.blog = null;
+      state.loading = false;
+      state.error = null;
+      state.success = false;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -134,16 +143,19 @@ const blogSlice = createSlice({
       .addCase(fetchBlogById.fulfilled, (state, action) => {
         state.blog = action.payload;
       })
-      .addMatcher(action => action.type.startsWith('blogs/') && action.type.endsWith('/pending'),
+      .addMatcher(
+        action => action.type.startsWith('blogs/') && action.type.endsWith('/pending'),
         (state) => {
           state.loading = true;
           state.error = null;
         })
-      .addMatcher(action => action.type.startsWith('blogs/') && action.type.endsWith('/fulfilled'),
+      .addMatcher(
+        action => action.type.startsWith('blogs/') && action.type.endsWith('/fulfilled'),
         (state) => {
           state.loading = false;
         })
-      .addMatcher(action => action.type.startsWith('blogs/') && action.type.endsWith('/rejected'),
+      .addMatcher(
+        action => action.type.startsWith('blogs/') && action.type.endsWith('/rejected'),
         (state, action) => {
           state.loading = false;
           state.error = action.payload;
@@ -151,5 +163,5 @@ const blogSlice = createSlice({
   }
 });
 
-export const { resetStatus } = blogSlice.actions;
+export const { resetStatus, clearState } = blogSlice.actions;
 export default blogSlice.reducer;

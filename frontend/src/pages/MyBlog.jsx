@@ -4,10 +4,11 @@ import { deleteBlog, fetchMyBlogs } from '../redux/blogSlice';
 import { EllipsisVertical, Loader2, Trash2 } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 const MyBlog = () => {
     const dispatch = useDispatch();
-    const { myBlogs, loading } = useSelector(state => state.blogs);
+    const { myBlogs } = useSelector(state => state.blogs);
 
     useEffect(() => {
         dispatch(fetchMyBlogs());
@@ -41,11 +42,13 @@ const MyBlog = () => {
                 {myBlogs.map(blog => (
                     <div key={blog._id} className="relative border border-white rounded shadow-xl hover:shadow-md transition">
                         <div className="relative">
+                             <Link to={`/${blog._id}`}>
                             <img
                                 src={`http://localhost:5000/${blog.media[0]}`}
                                 alt={blog.title}
                                 className="w-full h-65 object-cover rounded-t"
                             />
+                            </Link>
                             <Menu as="div" className="absolute top-2 right-2 z-10">
                                 <Menu.Button className="p-1 rounded-full bg-white/80 hover:bg-white shadow">
                                     <EllipsisVertical className="w-5 h-5 text-gray-700" />
@@ -67,6 +70,7 @@ const MyBlog = () => {
                                 </Menu.Items>
                             </Menu>
                         </div>
+                        <Link to={`/${blog._id}`}> 
                         <div className="p-4">
                             <p className="text-xs text-gray-500 mb-1">
                                 {new Date(blog?.createdAt).toLocaleDateString()} • {blog?.category.charAt(0).toUpperCase() + blog?.category.slice(1)}
@@ -99,10 +103,10 @@ const MyBlog = () => {
                             </div>
                         </div>
                         </div>
+                        </Link>
                     </div>
                 ))}
             </div>
-
         </div>
     )
 }

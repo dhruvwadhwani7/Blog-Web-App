@@ -5,17 +5,17 @@ import { registerUser } from '../redux/authSlice';
 import { toast } from 'react-toastify';
 
 const SignUp = () => {
-    
-     const images = [
-        './business.jpg',
-        './culture.jpg',
-        './sport1.jpg',
-        './tech.jpg',
-        './life.jpg',
-      ];
-    
-      const [currentIndex, setCurrentIndex] = useState(0);
-     const [formData, setFormData] = useState({
+
+  const images = [
+    './business.jpg',
+    './culture.jpg',
+    './sport1.jpg',
+    './tech.jpg',
+    './life.jpg',
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
@@ -25,20 +25,20 @@ const SignUp = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, token, error } = useSelector((state) => state.auth);
-      useEffect(() => {
-        const interval = setInterval(() => {
-          setCurrentIndex(prev => (prev + 1) % images.length);
-        }, 300000); 
-    
-        return () => clearInterval(interval); 
-      }, []);
-        useEffect(() => {
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % images.length);
+    }, 300000);
+
+    return () => clearInterval(interval);
+  }, []);
+  useEffect(() => {
     if (user && token) {
       toast.success(`Successfully signed up!`);
       if (user.role === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/');
+        navigate('/profile');
       }
     }
   }, [user, token, navigate]);
@@ -55,30 +55,35 @@ const SignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
+    if (formData.password.length < 6) {
+    toast.error('Password must be at least 6 characters long');
+    return;
+  }
     dispatch(registerUser(formData));
   };
-    
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="grid grid-cols-1 md:grid-cols-2 bg-white shadow-lg w-full max-w-4xl overflow-hidden mb-20">
-        {/* Left: Image Section */}
         <div className="hidden md:block">
-           <img
+          <img
             src={images[currentIndex]}
             alt="Login visual"
             className="w-full h-full object-cover"
           />
         </div>
-
-        {/* Right: Form Section */}
         <div className="p-6 sm:p-8 w-full">
           <h2 className="text-3xl  mb-3 text-gray-800">Sign up</h2>
           <p className="text-sx mb-6 text-gray-600 font-light  font-avenir">
-             Discover top blogs and hidden gems from our authors.
+            Discover top blogs and hidden gems from our authors.
           </p>
 
           <form className="space-y-3" onSubmit={handleSubmit}>
-            {/* Name */}
             <div>
               <label className="block font-light font-avenir mb-1">Full Name</label>
               <input
@@ -108,9 +113,11 @@ const SignUp = () => {
               <div className="flex items-center border-b border-gray-300 focus-within:border-[#b4552c]">
                 <span className="text-gray-700 px-2 py-1.5 select-none">+91</span>
                 <input
-                   type="tel"
+                  type="tel"
                   name="phone"
                   maxLength={10}
+                  pattern="\d{10}"
+                  title="Phone number must be exactly 10 digits"
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full py-1.5 pl-1 bg-transparent focus:outline-none text-sm"
@@ -118,12 +125,12 @@ const SignUp = () => {
                 />
               </div>
             </div>
-
             <div>
               <label className="block font-light font-avenir mb-1">Password *</label>
               <input
-               type="password"
+                type="password"
                 name="password"
+                 minLength={6}
                 value={formData.password}
                 onChange={handleChange}
                 className="w-full border-b border-gray-300 focus:outline-none focus:border-[#b4552c] py-1.5 bg-transparent text-sm"
@@ -139,7 +146,7 @@ const SignUp = () => {
             </button>
           </form>
           <p className="mt-6 text-sm text-gray-600 text-center">
-           Already have an account? <a href="/signin" className="text-[#b4552c] font-medium">SignIn</a>
+            Already have an account? <a href="/signin" className="text-[#b4552c] font-medium">SignIn</a>
           </p>
         </div>
       </div>

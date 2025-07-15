@@ -63,7 +63,11 @@ export const loadUserFromToken = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      console.log(" Token from localStorage:", token); 
+      if (!token || token.split('.').length !== 3) {
+        console.warn("Invalid token format");
+        throw new Error('Invalid or missing token');
+      }
 
       const res = await axios.get(`${API_URL}profile`, {
         headers: {
@@ -72,10 +76,14 @@ export const loadUserFromToken = createAsyncThunk(
       });
 
       const user = res.data;
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify(user)); 
       return user;
     } catch (error) {
-      return thunkAPI.rejectWithValue('Failed to load user');
+      console.error('loadUserFromToken error:', error.response?.data || error.message);
+      localStorage.removeItem('token'); 
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Failed to load user'
+      );
     }
   }
 );

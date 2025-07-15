@@ -11,11 +11,13 @@ import { loadUserFromToken } from './redux/authSlice';
 import { useEffect } from 'react';
 import Profile from './pages/Profile';
 import MyBlog from './pages/MyBlog';
+import BlogDetail from './pages/BlogDetail';
+import CategoryPage from './pages/CategoryPage';
 
 
 function App() {
   const dispatch = useDispatch();
-    const { user, token } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth);
   useEffect(() => {
     if (token && !user) {
       dispatch(loadUserFromToken());
@@ -28,9 +30,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<Login />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path='/profile' element={<Profile/>}/>
-           <Route path='/my-blog' element={<MyBlog/>}/>
+        <Route path="/admin" element={<Admin />} />
+        <Route path='/profile' element={<Profile />} />
+        <Route path='/my-blog' element={<MyBlog />} />
+        <Route path="/:id" element={<BlogDetail />} />
+        <Route path="/category/:category" element={<CategoryPage />} />
       </Routes>
       <ToastContainer position="bottom-right" autoClose={3000} />
     </Router>

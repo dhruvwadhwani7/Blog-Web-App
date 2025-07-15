@@ -74,7 +74,7 @@ export const deleteBlog = async (req, res) => {
 };
 export const getAllBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find().populate('authorId', 'name email').sort({ createdAt: -1 });
+    const blogs = await Blog.find().populate('authorId', 'name email avatar').sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -83,7 +83,7 @@ export const getAllBlogs = async (req, res) => {
 
 export const getBlogById = async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).populate('authorId', 'name email');
+    const blog = await Blog.findById(req.params.id).populate('authorId', 'name email avatar');
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
     res.json(blog);
   } catch (err) {
