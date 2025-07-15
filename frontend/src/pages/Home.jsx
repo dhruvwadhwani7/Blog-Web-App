@@ -1,18 +1,19 @@
-import React from 'react'
-import Banner from '../Components/Banner'
-import CategoryBoxes from '../Components/CategoryBoxes'
-import BlogForm from '../Components/BlogForm'
-import RecentBlogs from '../Components/RecentBlog'
+import React, { Suspense, lazy } from 'react';
+
+const Banner = lazy(() => import('../Components/Banner'));
+const CategoryBoxes = lazy(() => import('../Components/CategoryBoxes'));
+const RecentBlogs = lazy(() => import('../Components/RecentBlog'));
+const BlogForm = lazy(() => import('../Components/BlogForm'));
 
 const Home = () => {
   return (
-    <div>
-        <Banner/>
-        <CategoryBoxes/>
-        <RecentBlogs/>
-        <BlogForm/>
-    </div>
-  )
-}
+    <Suspense fallback={<div className="text-center py-10">Loading...</div>}>
+      <Banner />
+      <CategoryBoxes />
+      <RecentBlogs />
+      <BlogForm />
+    </Suspense>
+  );
+};
 
-export default Home
+export default Home;

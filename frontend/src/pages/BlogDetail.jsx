@@ -42,10 +42,18 @@ const BlogDetail = () => {
             </div>
             <div className="w-full lg:w-1/3 bg-pink-50 p-6 rounded-lg shadow">
                 <div className="flex flex-col items-center text-center">
-                    <img
-                        src={`http://localhost:5000${blog?.authorId?.avatar}`}
-                        className="w-40 h-45 object-cover mb-4"
-                    />
+                    {blog?.authorId?.avatar ? (
+                        <img
+                            src={`http://localhost:5000${blog?.authorId?.avatar}`}
+                            className="w-40 h-45 object-cover mb-4"
+                        />
+                    ) : (
+                        <img
+                            src={`./avatar.webp`}
+                            alt="Author"
+                            className="w-30 h-30 object-cover rounded-full mb-4"
+                        />
+                    )}
                     <h2 className="text-lg font-semibold mb-2">Thanks for checking out this post!</h2>
                     <p className="text-sm text-gray-700">
                         If you liked it or have something to say, drop a comment below.I’d love to hear what you think.

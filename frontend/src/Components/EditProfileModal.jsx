@@ -36,6 +36,11 @@ export default function EditProfileModal({ user, closeModal }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+         const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(formData.phone)) {
+        toast.error('Phone number must be exactly 10 digits');
+        return;
+    }
         try {
             const data = new FormData();
             data.append('name', formData.name);
@@ -129,6 +134,8 @@ export default function EditProfileModal({ user, closeModal }) {
                             className="w-full border-b border-gray-300 focus:outline-none focus:border-[#b4552c] py-1.5 bg-transparent text-sm"
                             value={formData.phone}
                             onChange={handleChange}
+                            maxLength={10}
+                            required
                         />
                     </div>
 

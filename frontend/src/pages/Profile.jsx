@@ -11,13 +11,13 @@ export default function Profile() {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const getInitial = (name) => name?.charAt(0).toUpperCase();
   const { myBlogs } = useSelector(state => state.blogs);
 
-useEffect(() => {
-  dispatch(fetchMyBlogs());
-}, [dispatch])
+  useEffect(() => {
+    dispatch(fetchMyBlogs());
+  }, [dispatch])
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-50">
@@ -52,9 +52,11 @@ useEffect(() => {
                   className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
                 />
               ) : (
-                <div className="w-28 h-28 rounded-full bg-blue-500 text-white flex items-center justify-center text-3xl font-bold border-4 border-white shadow-lg">
-                  {getInitial(user?.name)}
-                </div>
+                <img
+                  src={`./avatar.webp`}
+                  alt="Author"
+                  className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
+                />
               )}
             </div>
             <h2 className="text-xl font-semibold text-gray-800 mt-4">{user?.name}</h2>
@@ -86,13 +88,14 @@ useEffect(() => {
                 Settings
               </button>
               <button
-                onClick={() =>{ dispatch(logout())
-                navigate('/signin');
+                onClick={() => {
+                  dispatch(logout())
+                  navigate('/signin');
                 }
                 }
                 className="flex justify-center items-center gap-1.5 px-4 py-2 bg-red-700 font-semibold text-white rounded hover:bg-red-700 transition"
               >
-                 <LogOut className="w-5 h-5" />
+                <LogOut className="w-5 h-5" />
                 Logout
               </button>
             </div>

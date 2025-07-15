@@ -8,16 +8,19 @@ const Banner = () => {
           src="./teacup.jpg"
           alt="Workspace"
           className="w-full h-[500px] object-cover"
+          loading="lazy"
         />
         <img
           src="/women.jpg"
           alt="Portrait"
           className="w-full h-[500px] object-cover "
+          loading="lazy"
         />
         <img
           src="/plant.jpg"
           alt="Plant"
           className="w-full h-[500px] object-cover "
+          loading="lazy"
         />
       </div>
         <div className="absolute  bottom-[-40px]  left-1/2 transform -translate-x-1/2 bg-white px-10 py-4">
