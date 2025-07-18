@@ -1,45 +1,47 @@
-import React, { useEffect, useMemo } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllBlogs } from '../redux/blogSlice';
-import { Menu } from '@headlessui/react';
-import { EllipsisVertical, Heart, MessageCircle, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getLikeCount, isPostLiked, likePost, unlikePost } from '../redux/likeSlice';
 import { fetchCommentsByPost } from '../redux/commentSlice';
 
-
-const CategoryPage = () => {
-  const { category } = useParams();
+const BlogList = () => {
   const dispatch = useDispatch();
-  const { blogs = [], loading, error } = useSelector(state => state.blogs || {});
-  const postIds = useMemo(() => blogs?.map(b => b._id), [blogs]);
+  const { blogs, loading, error } = useSelector((state) => state.blogs);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const categories = ['All', ...new Set(blogs.map(blog => blog.category))];
   const { likeCounts, likeStatus } = useSelector((state) => state.likes);
-   const { commentCounts } = useSelector((state) => state.comments);
+  const { commentCounts } = useSelector((state) => state.comments);
+
+ console.log('count',likeCounts);
+  const filteredBlogs = selectedCategory === 'All'
+    ? blogs
+    : blogs.filter(blog => blog.category === selectedCategory);
 
   useEffect(() => {
     dispatch(fetchAllBlogs());
   }, [dispatch]);
+  const postIds = useMemo(() => blogs?.map(b => b._id), [blogs]);
 
-  const filtered = blogs
-    .filter(blog => blog.category?.toLowerCase() === category.toLowerCase())
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+useEffect(() => {
+  if (postIds && postIds.length > 0) {
+    postIds.forEach(postId => {
+      dispatch(getLikeCount(postId));
+      dispatch(isPostLiked(postId));
+      dispatch(fetchCommentsByPost(postId))
+    });
+  }
+}, [dispatch, postIds]);
 
-  const getTruncatedText = (html, maxLength = 55) => {
+  if (loading) return <div className="text-center py-10">Loading blogs...</div>;
+  if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
+  const getTruncatedText = (html, maxLength = 150) => {
     const div = document.createElement('div');
     div.innerHTML = html;
     const text = div.textContent || div.innerText || '';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
-  useEffect(() => {
-    if (postIds && postIds.length > 0) {
-      postIds.forEach(postId => {
-        dispatch(getLikeCount(postId));
-        dispatch(isPostLiked(postId));
-        dispatch(fetchCommentsByPost(postId))
-      });
-    }
-  }, [dispatch, postIds]);
-
   const handleLikeToggle = (postId) => {
     if (likeStatus[postId]) {
       dispatch(unlikePost(postId));
@@ -47,11 +49,26 @@ const CategoryPage = () => {
       dispatch(likePost(postId));
     }
   };
+  console.log("count",likeCounts);
+  
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8 capitalize">{category} Blogs</h1>
+      <div className="flex flex-wrap gap-3 mb-6">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-1 rounded-full border ${selectedCategory === cat
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300'
+              } hover:bg-blue-500 hover:text-white transition`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((blog) => (
+        {filteredBlogs.map((blog) => (
           <div
             key={blog._id}
             className="bg-white rounded-md overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col"
@@ -104,12 +121,12 @@ const CategoryPage = () => {
               <div className="mt-4 border-t border-gray-400 pt-3 flex justify-between text-sm text-gray-500">
                 <span className="flex items-center gap-1">
                   <MessageCircle className="w-4 h-4" />
-                  {commentCounts[blog._id] || ''} 
+                {commentCounts[blog._id]||""}
                 </span>
                 <button
                   onClick={() => handleLikeToggle(blog._id)}
                   key={blog._id}
-                  className={`flex items-center gap-1 cursor-pointer transition-colors ${likeStatus[blog._id] ? 'text-red-600' : 'text-gray-500'
+                  className={`flex items-center gap-1 transition-colors cursor-pointer  ${likeStatus[blog._id] ? 'text-red-600' : 'text-gray-500'
                     } hover:text-red-600`}
                 >
                   <Heart
@@ -127,4 +144,4 @@ const CategoryPage = () => {
   );
 };
 
-export default CategoryPage;
+export default BlogList;

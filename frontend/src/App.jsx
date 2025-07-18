@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import MyBlog from './pages/MyBlog';
 import BlogDetail from './pages/BlogDetail';
 import CategoryPage from './pages/CategoryPage';
+import BlogList from './pages/BlogList';
 
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
         <Route path='/profile' element={<Profile />} />
         <Route path='/my-blog' element={<MyBlog />} />
         <Route path="/:id" element={<BlogDetail />} />
+        <Route path='/bloglist' element={<BlogList/>}/>
         <Route path="/category/:category" element={<CategoryPage />} />
       </Routes>
       <ToastContainer position="bottom-right" autoClose={3000} />

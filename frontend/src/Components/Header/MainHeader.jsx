@@ -12,7 +12,9 @@ const MainHeader = () => {
       </h1>
       <nav className="mt-3 md:mt-0 flex gap-8 text-base font-medium text-gray-800">
         <Link to="/" className="hover:text-pink-600 transition-colors">Home</Link>
+        {user && token ?  (
         <Link to="/my-blog" className="hover:text-pink-600 transition-colors">My Blog</Link>
+        ):(null)}
         <Link to="/about" className="hover:text-pink-600 transition-colors">About</Link>
         {user && token ? (
           <Link to="/profile" className="hover:text-pink-600 transition-colors">Profile</Link>

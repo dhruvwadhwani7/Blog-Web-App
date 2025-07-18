@@ -1,16 +1,41 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllBlogs } from '../redux/blogSlice';
-import { MessageCircle, Heart } from 'lucide-react'; // or use any icon lib
+import { MessageCircle, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { getLikeCount, isPostLiked } from '../redux/likeSlice';
+import { fetchCommentsByPost } from '../redux/commentSlice';
 
 const RecentBlogs = () => {
     const dispatch = useDispatch();
     const { blogs, loading } = useSelector((state) => state.blogs);
     const getInitial = (name) => name?.charAt(0).toUpperCase();
+    const { likeCounts, likeStatus } = useSelector((state) => state.likes);
+    const postIds = useMemo(() => blogs?.map(b => b._id), [blogs]);
+    const { commentCounts } = useSelector((state) => state.comments);
+      
     useEffect(() => {
         dispatch(fetchAllBlogs());
     }, [dispatch]);
 
+    useEffect(() => {
+        if (postIds && postIds.length > 0) {
+            postIds.forEach(postId => {
+                dispatch(getLikeCount(postId));
+                dispatch(isPostLiked(postId));
+                  dispatch(fetchCommentsByPost(postId));
+            });
+        }
+    }, [dispatch, postIds]);
+
+    const handleLikeToggle = (postId) => {
+        if (likeStatus[postId]) {
+            dispatch(unlikePost(postId));
+        } else {
+            dispatch(likePost(postId));
+        }
+    };
+    
     const recentBlogs = blogs.slice(0, 3);
     const getTruncatedText = (html, maxLength = 150) => {
         const div = document.createElement('div');
@@ -61,7 +86,7 @@ const RecentBlogs = () => {
                                                     year: 'numeric'
                                                 })}</span>
                                                 <span>•</span>
-                                                <span>2 min read</span>
+                                                <span>{blog?.category.charAt(0).toUpperCase() + blog?.category.slice(1)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -76,19 +101,30 @@ const RecentBlogs = () => {
                                     <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
                                         <span className="flex items-center gap-1">
                                             <MessageCircle className="w-4 h-4" />
-                                            {blog.comment?.length || 0} comments
+                                           <span>{commentCounts[blog._id] || ""}</span>
                                         </span>
-                                        <button className="hover:text-red-600">
-                                            <Heart className="w-4 h-4" />
+                                        <button
+                                            onClick={() => handleLikeToggle(blog._id)}
+                                            key={blog._id}
+                                            className={`flex items-center gap-1 cursor-pointer  transition-colors ${likeStatus[blog._id] ? 'text-red-600' : 'text-gray-500'
+                                                } hover:text-red-600`}
+                                        >
+                                            <Heart
+                                                className="w-4 h-4 fill-current"
+                                                fill={likeStatus[blog._id] ? 'currentColor' : 'none'}
+                                            />
+                                            <span className='text-gray-600'>{likeCounts[blog._id]}</span>
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     ))}
-                    <button className="mt-6 px-6 py-3 text-white bg-[#A04F3B] w-full max-w-sm font-semibold text-white transition-all duration-300">
-                        Explore More
-                    </button>
+                    <Link to="/bloglist">
+                        <button className="mt-6 px-6 py-3 text-white bg-[#A04F3B] w-full max-w-sm font-semibold text-white transition-all duration-300">
+                            Explore More
+                        </button>
+                    </Link>
                 </div>
                 <div className="bg-[#FAEDE8] relative flex flex-col items-center justify-start py-10 px-4">
                     <div className="bg-[#A04F3B] text-white p-8 w-full max-w-sm">
@@ -133,10 +169,10 @@ const RecentBlogs = () => {
                         <h2 className="text-2xl font-bold mt-15 text-center font-serif">Discover More Moments</h2>
                         <div className=" p-6 absolute right-0 translate-x-1/4 w-full max-w-4xl relative">
                             <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
-                                <img src="./sport1.jpg" alt="1" className=" w-full h-40 object-cover" loading="lazy"/>
-                                <img src="./teacup.jpg" alt="2" className=" w-full h-40 object-cover" loading="lazy"/>
-                                <img src="./life.jpg" alt="3" className="w-full h-40 object-cover" loading="lazy"/>
-                                <img src="./plant.jpg" alt="4" className=" w-full h-40 object-cover" loading="lazy"/>
+                                <img src="./sport1.jpg" alt="1" className=" w-full h-40 object-cover" loading="lazy" />
+                                <img src="./teacup.jpg" alt="2" className=" w-full h-40 object-cover" loading="lazy" />
+                                <img src="./life.jpg" alt="3" className="w-full h-40 object-cover" loading="lazy" />
+                                <img src="./plant.jpg" alt="4" className=" w-full h-40 object-cover" loading="lazy" />
                                 <img src="./breakfast.jpg" alt="5" className=" w-full h-40 object-cover" loading="lazy" />
                                 <img src="./sweet.jpg" alt="6" className="w-full h-40 object-cover" loading="lazy" />
                             </div>

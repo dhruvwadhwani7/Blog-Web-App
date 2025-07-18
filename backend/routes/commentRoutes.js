@@ -1,9 +1,15 @@
-// Comment routes: add/delete comments
-const express = require('express')
-const router = express.Router()
-const commentController = require('../controllers/commentController')
+import express from 'express';
+import {
+  addComment,
+  deleteComment,
+  getCommentsByPost
+} from '../controllers/commentController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
-router.post('/', commentController.addComment)
-router.delete('/:id', commentController.deleteComment)
+const router = express.Router();
 
-module.exports = router
+router.post('/:postId', protect, addComment); 
+router.delete('/:commentId', protect, deleteComment); 
+router.get('/:postId', getCommentsByPost);
+
+export default router;
