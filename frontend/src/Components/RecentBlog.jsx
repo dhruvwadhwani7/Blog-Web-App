@@ -13,7 +13,7 @@ const RecentBlogs = () => {
     const { likeCounts, likeStatus } = useSelector((state) => state.likes);
     const postIds = useMemo(() => blogs?.map(b => b._id), [blogs]);
     const { commentCounts } = useSelector((state) => state.comments);
-      
+
     useEffect(() => {
         dispatch(fetchAllBlogs());
     }, [dispatch]);
@@ -23,7 +23,7 @@ const RecentBlogs = () => {
             postIds.forEach(postId => {
                 dispatch(getLikeCount(postId));
                 dispatch(isPostLiked(postId));
-                  dispatch(fetchCommentsByPost(postId));
+                dispatch(fetchCommentsByPost(postId));
             });
         }
     }, [dispatch, postIds]);
@@ -35,7 +35,7 @@ const RecentBlogs = () => {
             dispatch(likePost(postId));
         }
     };
-    
+
     const recentBlogs = blogs.slice(0, 3);
     const getTruncatedText = (html, maxLength = 150) => {
         const div = document.createElement('div');
@@ -53,55 +53,59 @@ const RecentBlogs = () => {
                             key={blog._id}
                             className="grid grid-cols-1 md:grid-cols-2 bg-white  shadow gap-4 items-start"
                         >
-                            <img
-                                src={`http://localhost:5000/${blog.media[0]}`}
-                                alt={blog.title}
-                                className="w-full h-[300px] object-cover "
-                                loading="lazy"
-                            />
+                            <Link to={`/${blog._id}`} className='cursor-pointer'>
+                                <img
+                                    src={`http://localhost:5000/${blog.media[0]}`}
+                                    alt={blog.title}
+                                    className="w-full h-[300px] object-cover "
+                                    loading="lazy"
+                                />
+                            </Link>
                             <div className="flex flex-col py-4 px-4 justify-between h-full">
                                 <div>
-                                    <div className="flex items-start gap-3 mb-2">
-                                        {blog?.authorId?.avatar ? (
-                                            <img
-                                                src={`http://localhost:5000${blog?.authorId?.avatar}`}
-                                                alt="Author"
-                                                className="w-10 h-10 rounded-full object-cover"
-                                                loading="lazy"
-                                            />
-                                        ) : (
-                                            <img
-                                                src={`./avatar.webp`}
-                                                alt="Author"
-                                                className="w-11 h-11 rounded-full object-cover"
-                                                loading="lazy"
-                                            />
-                                        )}
-                                        <div className="text-gray-600 text-sm ">
-                                            <div className="text-black-500 font-light font-avenir">{blog.authorId?.name || 'Unknown'}</div>
-                                            <div className="flex items-center gap-2 text-xs mt-1 text-gray-500 font-light font-avenir">
-                                                <span>{new Date(blog.createdAt).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    year: 'numeric'
-                                                })}</span>
-                                                <span>•</span>
-                                                <span>{blog?.category.charAt(0).toUpperCase() + blog?.category.slice(1)}</span>
+                                    <Link to={`/${blog._id}`} className='cursor-pointer'>
+                                        <div className="flex items-start gap-3 mb-2">
+                                            {blog?.authorId?.avatar ? (
+                                                <img
+                                                    src={`http://localhost:5000${blog?.authorId?.avatar}`}
+                                                    alt="Author"
+                                                    className="w-10 h-10 rounded-full object-cover"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <img
+                                                    src={`./avatar.webp`}
+                                                    alt="Author"
+                                                    className="w-11 h-11 rounded-full object-cover"
+                                                    loading="lazy"
+                                                />
+                                            )}
+                                            <div className="text-gray-600 text-sm ">
+                                                <div className="text-black-500 font-light font-avenir">{blog.authorId?.name || 'Unknown'}</div>
+                                                <div className="flex items-center gap-2 text-xs mt-1 text-gray-500 font-light font-avenir">
+                                                    <span>{new Date(blog.createdAt).toLocaleDateString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric'
+                                                    })}</span>
+                                                    <span>•</span>
+                                                    <span>{blog?.category.charAt(0).toUpperCase() + blog?.category.slice(1)}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <h3 className="text-xl font-bold mt-5">{blog.title}</h3>
-                                    <p className="text-sm text-gray-700 mt-3">
-                                        {getTruncatedText(blog.content, 150)}
-                                    </p>
+                                        <h3 className="text-xl font-bold mt-5">{blog.title}</h3>
+                                        <p className="text-sm text-gray-700 mt-3">
+                                            {getTruncatedText(blog.content, 150)}
+                                        </p>
+                                    </Link>
                                 </div>
                                 <div>
                                     <hr className="border-t border-gray-200 my-4" />
                                     <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
                                         <span className="flex items-center gap-1">
                                             <MessageCircle className="w-4 h-4" />
-                                           <span>{commentCounts[blog._id] || ""}</span>
+                                            <span>{commentCounts[blog._id] || ""}</span>
                                         </span>
                                         <button
                                             onClick={() => handleLikeToggle(blog._id)}
@@ -121,7 +125,7 @@ const RecentBlogs = () => {
                         </div>
                     ))}
                     <Link to="/bloglist">
-                        <button className="mt-6 px-6 py-3 text-white bg-[#A04F3B] w-full max-w-sm font-semibold text-white transition-all duration-300">
+                        <button className="mt-6 px-6 cursor-pointer py-3 text-white bg-[#A04F3B] w-full max-w-sm font-semibold text-white transition-all duration-300">
                             Explore More
                         </button>
                     </Link>
@@ -170,10 +174,10 @@ const RecentBlogs = () => {
                         <div className=" p-6 absolute right-0 translate-x-1/4 w-full max-w-4xl relative">
                             <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
                                 <img src="./sport1.jpg" alt="1" className=" w-full h-40 object-cover" loading="lazy" />
-                                <img src="./teacup.jpg" alt="2" className=" w-full h-40 object-cover" loading="lazy" />
+                                <img src="./tech.jpg" alt="2" className=" w-full h-40 object-cover" loading="lazy" />
+                                 <img src="./breakfast.jpg" alt="5" className=" w-full h-40 object-cover" loading="lazy" />
                                 <img src="./life.jpg" alt="3" className="w-full h-40 object-cover" loading="lazy" />
-                                <img src="./plant.jpg" alt="4" className=" w-full h-40 object-cover" loading="lazy" />
-                                <img src="./breakfast.jpg" alt="5" className=" w-full h-40 object-cover" loading="lazy" />
+                                <img src="./culture.jpg" alt="4" className=" w-full h-40 object-cover" loading="lazy" />
                                 <img src="./sweet.jpg" alt="6" className="w-full h-40 object-cover" loading="lazy" />
                             </div>
                         </div>

@@ -1,11 +1,12 @@
 import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBlogById } from '../redux/blogSlice';
 import { addComment, fetchCommentsByPost } from '../redux/commentSlice';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { useState } from 'react';
-import { SendHorizonal } from 'lucide-react';
+import { Heart, MessageCircle, SendHorizonal } from 'lucide-react';
+import { getLikeCount, isPostLiked, likePost, unlikePost } from '../redux/likeSlice';
 
 
 const BlogDetail = () => {
@@ -15,10 +16,24 @@ const BlogDetail = () => {
     const [submitError, setSubmitError] = useState('');
     const { blog, loading } = useSelector((state) => state.blogs);
     const normalizedId = id?.toString();
-
     const comments = useSelector((state) => state.comments?.commentsByPost?.[normalizedId]) || [];
-    const commentCount = useSelector((state) => state.comments?.commentCounts?.[normalizedId]) || 0;
+    const { commentCounts } = useSelector((state) => state.comments);
     const commentsLoading = useSelector((state) => state.comments?.loading);
+    const postIds = useMemo(() => blog?._id ?? null, [blog]);
+    const { likeCounts, likeStatus } = useSelector((state) => state.likes);
+
+    useEffect(() => {
+        dispatch(getLikeCount(id));
+        dispatch(isPostLiked(id));
+    }, [dispatch, id]);
+
+    const handleLikeToggle = (id) => {
+        if (likeStatus[id]) {
+            dispatch(unlikePost(id));
+        } else {
+            dispatch(likePost(id));
+        }
+    };
 
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
@@ -59,12 +74,27 @@ const BlogDetail = () => {
                 <img
                     src={`http://localhost:5000/${blog.media[0]}`}
                     alt="Cover"
-                    className="w-full h-72 object-cover rounded-lg mb-6"
+                    className="w-full h-72 object-cover rounded-lg mb-2"
                 />
-                <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: blog.content }}
-                />
+                <div className='flex gap-5 mb-5'>
+                    <button
+                        onClick={() => handleLikeToggle(blog._id)}
+                        key={blog._id}
+                        className={`flex items-center gap-1 cursor-pointer  transition-colors ${likeStatus[blog._id] ? 'text-red-600' : 'text-gray-500'
+                            } hover:text-red-600`}
+                    >
+                        <Heart
+                            className="w-4 h-4 fill-current"
+                            fill={likeStatus[blog._id] ? 'currentColor' : 'none'}
+                        />
+                        <span className='text-gray-600'>{likeCounts[blog._id]}</span>
+                    </button>
+                    <span className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4 text-gray-600" />
+                        <span className='text-gray-600'>{commentCounts[blog._id] || ""}</span>
+                    </span>
+                </div>
+                <div dangerouslySetInnerHTML={{ __html: blog.content }} style={{ fontFamily: "cursive", fontSize: "18px" }}></div>
                 <div className='relative'>
                     <div className='max-h-[500px] overflow-y-auto pr-2'>
                         {comments.map((comment) => (
@@ -129,13 +159,48 @@ const BlogDetail = () => {
                         />
                     )}
                     <h2 className="text-lg font-semibold mb-2">Thanks for checking out this post!</h2>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-gray-700 italic">
                         If you liked it or have something to say, drop a comment below.I’d love to hear what you think.
                         Let’s keep the conversation going — I’m excited to connect with you in the comments!
                     </p>
-                    <button className="mt-4 border border-gray-800 px-4 py-2 rounded hover:bg-gray-800 hover:text-white transition">
-                        Read More
-                    </button>
+                </div>
+                <div className="bg-[#A04F3B] text-white p-8 w-full max-w-sm mt-15">
+                    <h2 className="text-[35px]  leading-[1.2] font-serif mb-6 text-center">
+                        Join the <br /> Conversation
+                    </h2>
+                    <form className="space-y-4 py-4 px-5">
+                        <div className='mt-6'>
+                            <label htmlFor="email" className="text-md font-medium">
+                                Email *
+                            </label>
+                            <input
+                                type="email"
+                                id="email"
+                                className="mt-1 w-full px-4 py-2 bg-transparent border-b border-white placeholder-white text-white focus:outline-none"
+                                placeholder=""
+                                required
+                            />
+                        </div>
+
+                        <div className="flex items-start gap-2 mt-8 text-md">
+                            <input
+                                type="checkbox"
+                                id="subscribe"
+                                className="w-4 h-4 appearance-none border-2 border-white bg-transparent checked:bg-white checked:border-white focus:outline-none cursor-pointer mt-1"
+                                required
+                            />
+                            <label htmlFor="subscribe" className="text-white font-light font-avenir text-[18px]">
+                                Yes, subscribe me to your newsletter. *
+                            </label>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="bg-white text-[#A04F3B] w-full font-semibold px-6 py-2 hover:bg-gray-100 transition mt-8"
+                        >
+                            Subscribe
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

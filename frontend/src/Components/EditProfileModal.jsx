@@ -62,7 +62,7 @@ export default function EditProfileModal({ user, closeModal }) {
 
     return (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white w-full max-w-md p-6 relative">
+            <div className="bg-white w-full max-w-md p-6 relative mb-150">
                 <button
                     onClick={closeModal}
                     className="absolute top-3 right-3 text-gray-500 hover:text-black"

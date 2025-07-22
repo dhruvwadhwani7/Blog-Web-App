@@ -58,10 +58,10 @@ useEffect(() => {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-1 rounded-full border ${selectedCategory === cat
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300'
-              } hover:bg-blue-500 hover:text-white transition`}
+            className={`px-8 py-1 rounded-full border ${selectedCategory === cat
+                ? 'bg-[#b4552c] text-white border capitalize'
+                : 'bg-white text-gray-700 border-gray-300 capitalize'
+              } hover:bg-[#b4552c] hover:text-white transition cursor-pointer`}
           >
             {cat}
           </button>
