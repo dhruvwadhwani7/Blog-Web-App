@@ -21,6 +21,7 @@ const BlogDetail = () => {
     const commentsLoading = useSelector((state) => state.comments?.loading);
     const postIds = useMemo(() => blog?._id ?? null, [blog]);
     const { likeCounts, likeStatus } = useSelector((state) => state.likes);
+  const { user, token } = useSelector((state) => state.auth);
 
     useEffect(() => {
         dispatch(getLikeCount(id));
@@ -122,6 +123,7 @@ const BlogDetail = () => {
                             </div>
                         ))}
                     </div>
+                       {user?.role !== "admin" && (
                     <form
                         onSubmit={handleCommentSubmit}
                         className="mt-4 w-full max-w-3xl bg-white border border-gray-200 rounded-full px-4 py-2 shadow-md flex items-center"
@@ -141,10 +143,13 @@ const BlogDetail = () => {
                             <SendHorizonal className="w-5 h-5" />
                         </button>
                     </form>
+                       )}
                 </div>
 
             </div>
+           
             <div className="w-full lg:w-1/3 bg-pink-50 p-6 rounded-lg shadow">
+          
                 <div className="flex flex-col items-center text-center">
                     {blog?.avatar ? (
                         <img
@@ -164,6 +169,7 @@ const BlogDetail = () => {
                         Let’s keep the conversation going — I’m excited to connect with you in the comments!
                     </p>
                 </div>
+                {user?.role !== "admin" && (
                 <div className="bg-[#A04F3B] text-white p-8 w-full max-w-sm mt-15">
                     <h2 className="text-[35px]  leading-[1.2] font-serif mb-6 text-center">
                         Join the <br /> Conversation
@@ -202,6 +208,7 @@ const BlogDetail = () => {
                         </button>
                     </form>
                 </div>
+                )}
             </div>
         </div>
     );

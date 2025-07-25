@@ -8,6 +8,7 @@ const initialState = {
   token: localStorage.getItem('token') || null,
   loading: false,
   error: null,
+  users: []
 };
 
 export const registerUser = createAsyncThunk(
@@ -34,6 +35,31 @@ export const registerUser = createAsyncThunk(
     }
   }
 );
+export const createUserByAdmin = createAsyncThunk(
+  'auth/createUserByAdmin',
+  async ({ name, email, phone, password }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API_URL}register`, {
+        name,
+        email,
+        phone,
+        password,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data.user; // only return created user
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Failed to create user'
+      );
+    }
+  }
+);
+
 
 export const loginUser = createAsyncThunk(
   'auth/login',
@@ -63,7 +89,7 @@ export const loadUserFromToken = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const token = localStorage.getItem('token');
-      console.log(" Token from localStorage:", token); 
+      console.log(" Token from localStorage:", token);
       if (!token || token.split('.').length !== 3) {
         console.warn("Invalid token format");
         throw new Error('Invalid or missing token');
@@ -76,11 +102,11 @@ export const loadUserFromToken = createAsyncThunk(
       });
 
       const user = res.data;
-      localStorage.setItem('user', JSON.stringify(user)); 
+      localStorage.setItem('user', JSON.stringify(user));
       return user;
     } catch (error) {
       console.error('loadUserFromToken error:', error.response?.data || error.message);
-      localStorage.removeItem('token'); 
+      localStorage.removeItem('token');
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || 'Failed to load user'
       );
@@ -113,6 +139,43 @@ export const updateUser = createAsyncThunk(
   }
 );
 
+export const fetchAllUsers = createAsyncThunk(
+  'auth/fetchAllUsers',
+  async (_, thunkAPI) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}users`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Required if verifyToken is used
+        },
+      });
+      return res.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch users'
+      );
+    }
+  }
+);
+
+export const deleteUser = createAsyncThunk(
+  'auth/deleteUser',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.delete(`${API_URL}users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return userId;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
+
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -139,6 +202,14 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(createUserByAdmin.fulfilled, (state, action) => {
+  state.loading = false;
+  state.users.push(action.payload); // update the user list
+})
+.addCase(createUserByAdmin.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+})
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -161,6 +232,24 @@ const authSlice = createSlice({
         state.user = action.payload;
       })
       .addCase(updateUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.users = state.users.filter((u) => u._id !== action.payload);
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(fetchAllUsers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.users = action.payload;
+      })
+      .addCase(fetchAllUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

@@ -8,6 +8,7 @@ import cors from 'cors';
 import path from 'path';
 import commentRoutes from './routes/commentRoutes.js';
 import { protect } from './middleware/authMiddleware.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.get('/api/auth/profile', protect, (req, res) => {
 });
 app.use('/api/likes', likeblogRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.get('/', (req, res) => {
   res.send('API is running...');

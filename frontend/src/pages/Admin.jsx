@@ -1,9 +1,19 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
+import UserList from '../Components/UserList';
+import BlogHistory from '../Components/BlogHistory';
+
+
+
 
 const Admin = () => {
-  return (
-    <div>Admin</div>
-  )
-}
+  
 
-export default Admin
+  return (
+    <>
+   <UserList/>
+   <BlogHistory/>
+   </>
+  );
+};
+
+export default Admin;

@@ -1,8 +1,9 @@
 import Comment from "../models/Comment.js";
+import Blog from '../models/BlogSchema.js';
+import Notification from '../models/Notification.js';
 
 export const addComment = async (req, res) => {
   try {
-  
     const { content } = req.body;
     const postId = req.params.postId;
 
@@ -10,14 +11,33 @@ export const addComment = async (req, res) => {
       return res.status(400).json({ message: 'Comment content is required' });
     }
 
+    // 1. Create the comment
     const comment = await Comment.create({
       content,
       postId,
       userId: req.user._id,
     });
 
+    // 2. Fetch the blog post to get author
+    const blog = await Blog.findById(postId);
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog post not found' });
+    }
+
+    // 3. Create a notification for the blog author (if not same as commenter)
+    if (blog.authorId.toString() !== req.user._id.toString()) {
+      await Notification.create({
+        recipient: blog.authorId,
+        sender: req.user._id,
+        type: 'Comment',
+        post: postId,
+        message: `${req.user.name} commented on your post.`,
+      });
+    }
+
     res.status(201).json(comment);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Failed to add comment' });
   }
 };
