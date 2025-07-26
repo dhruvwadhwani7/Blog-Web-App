@@ -14,6 +14,9 @@ import MyBlog from './pages/MyBlog';
 import BlogDetail from './pages/BlogDetail';
 import CategoryPage from './pages/CategoryPage';
 import BlogList from './pages/BlogList';
+import PersonalProfile from './pages/PersonalProfile';
+import SavedBlogs from './pages/SavedBlogs';
+import About from './pages/About';
 
 
 function App() {
@@ -25,21 +28,36 @@ function App() {
     }
   }, [token, user, dispatch]);
   return (
+    <>
     <Router>
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path='/about' element={<About/>}/>
         <Route path="/signin" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
         <Route path='/profile' element={<Profile />} />
+        <Route path='/user/:id' element={<PersonalProfile />} />
         <Route path='/my-blog' element={<MyBlog />} />
+         <Route path='/saved-blog' element={<SavedBlogs />} />
         <Route path="/:id" element={<BlogDetail />} />
         <Route path='/bloglist' element={<BlogList/>}/>
         <Route path="/category/:category" element={<CategoryPage />} />
       </Routes>
-      <ToastContainer position="bottom-right" autoClose={3000} />
+   
     </Router>
+        <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      </>
   );
 }
 

@@ -7,6 +7,9 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { useState } from 'react';
 import { Heart, MessageCircle, SendHorizonal } from 'lucide-react';
 import { getLikeCount, isPostLiked, likePost, unlikePost } from '../redux/likeSlice';
+import { subscribeNewsletter } from '../redux/authSlice';
+import { toast } from 'react-toastify';
+import Loader from '../Components/Loader';
 
 
 const BlogDetail = () => {
@@ -14,6 +17,8 @@ const BlogDetail = () => {
     const dispatch = useDispatch();
     const [commentText, setCommentText] = useState('');
     const [submitError, setSubmitError] = useState('');
+    const [email, setEmail] = useState('');
+    const [agree, setAgree] = useState(false);
     const { blog, loading } = useSelector((state) => state.blogs);
     const normalizedId = id?.toString();
     const comments = useSelector((state) => state.comments?.commentsByPost?.[normalizedId]) || [];
@@ -21,7 +26,8 @@ const BlogDetail = () => {
     const commentsLoading = useSelector((state) => state.comments?.loading);
     const postIds = useMemo(() => blog?._id ?? null, [blog]);
     const { likeCounts, likeStatus } = useSelector((state) => state.likes);
-  const { user, token } = useSelector((state) => state.auth);
+    const { user, token } = useSelector((state) => state.auth);
+    const { subscribedEmail } = useSelector((state) => state.auth);
 
     useEffect(() => {
         dispatch(getLikeCount(id));
@@ -50,6 +56,14 @@ const BlogDetail = () => {
             setSubmitError('Failed to submit comment');
         }
     };
+    useEffect(() => {
+        if (user?.email) {
+            setEmail(user.email);
+            if (subscribedEmail === user.email) {
+                setAgree(true);
+            }
+        }
+    }, [user, subscribedEmail]);
 
 
     useEffect(() => {
@@ -57,7 +71,26 @@ const BlogDetail = () => {
         dispatch(fetchCommentsByPost(id));
     }, [id, dispatch]);
 
-    if (loading) return <p className="text-center">Loading...</p>;
+    const handleNewsletterSubmit = async (e) => {
+        e.preventDefault();
+        if (!agree || !email) {
+            toast.error('Please agree to subscribe and enter your email');
+            return;
+        }
+
+        const result = await dispatch(subscribeNewsletter(email));
+        if (subscribeNewsletter.fulfilled.match(result)) {
+            toast.success(result.payload.message);
+        } else {
+            toast.error(result.payload || 'Subscription failed');
+        }
+    };
+
+    const handleNewsletterCheckbox = (e) => {
+        setAgree(e.target.checked);
+    };
+
+    if (loading) return <Loader/>
     if (!blog) return <p className="text-center">Blog not found</p>;
     return (
         <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
@@ -123,33 +156,33 @@ const BlogDetail = () => {
                             </div>
                         ))}
                     </div>
-                       {user?.role !== "admin" && (
-                    <form
-                        onSubmit={handleCommentSubmit}
-                        className="mt-4 w-full max-w-3xl bg-white border border-gray-200 rounded-full px-4 py-2 shadow-md flex items-center"
-                    >
-                        <textarea
-                            className="flex-1 resize-none border-none outline-none bg-transparent text-sm px-2 py-1 max-h-20"
-                            rows={1}
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            placeholder="Write a comment..."
-                        />
-                        <button
-                            type="submit"
-                            className="ml-2 p-2 text-blue-600 hover:text-blue-800 transition"
-                            title="Send"
+                    {user?.role !== "admin" && (
+                        <form
+                            onSubmit={handleCommentSubmit}
+                            className="mt-4 w-full max-w-3xl bg-white border border-gray-200 rounded-full px-4 py-2 shadow-md flex items-center"
                         >
-                            <SendHorizonal className="w-5 h-5" />
-                        </button>
-                    </form>
-                       )}
+                            <textarea
+                                className="flex-1 resize-none border-none outline-none bg-transparent text-sm px-2 py-1 max-h-20"
+                                rows={1}
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                                placeholder="Write a comment..."
+                            />
+                            <button
+                                type="submit"
+                                className="ml-2 p-2 text-blue-600 hover:text-blue-800 transition"
+                                title="Send"
+                            >
+                                <SendHorizonal className="w-5 h-5" />
+                            </button>
+                        </form>
+                    )}
                 </div>
 
             </div>
-           
+
             <div className="w-full lg:w-1/3 bg-pink-50 p-6 rounded-lg shadow">
-          
+
                 <div className="flex flex-col items-center text-center">
                     {blog?.avatar ? (
                         <img
@@ -170,44 +203,47 @@ const BlogDetail = () => {
                     </p>
                 </div>
                 {user?.role !== "admin" && (
-                <div className="bg-[#A04F3B] text-white p-8 w-full max-w-sm mt-15">
-                    <h2 className="text-[35px]  leading-[1.2] font-serif mb-6 text-center">
-                        Join the <br /> Conversation
-                    </h2>
-                    <form className="space-y-4 py-4 px-5">
-                        <div className='mt-6'>
-                            <label htmlFor="email" className="text-md font-medium">
-                                Email *
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                className="mt-1 w-full px-4 py-2 bg-transparent border-b border-white placeholder-white text-white focus:outline-none"
-                                placeholder=""
-                                required
-                            />
-                        </div>
+                    <div className="bg-[#A04F3B] text-white p-8 w-full max-w-sm mt-15">
+                        <h2 className="text-[35px]  leading-[1.2] font-serif mb-6 text-center">
+                            Join the <br /> Conversation
+                        </h2>
+                        <form className="space-y-4 py-4 px-5" onSubmit={handleNewsletterSubmit}>
+                            <div className='mt-6'>
+                                <label htmlFor="email" className="text-md font-medium">
+                                    Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="mt-1 w-full  py-2 bg-transparent border-b border-white placeholder-white text-white focus:outline-none"
+                                    placeholder=""
+                                    required
+                                />
+                            </div>
 
-                        <div className="flex items-start gap-2 mt-8 text-md">
-                            <input
-                                type="checkbox"
-                                id="subscribe"
-                                className="w-4 h-4 appearance-none border-2 border-white bg-transparent checked:bg-white checked:border-white focus:outline-none cursor-pointer mt-1"
-                                required
-                            />
-                            <label htmlFor="subscribe" className="text-white font-light font-avenir text-[18px]">
-                                Yes, subscribe me to your newsletter. *
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="bg-white text-[#A04F3B] w-full font-semibold px-6 py-2 hover:bg-gray-100 transition mt-8"
-                        >
-                            Subscribe
-                        </button>
-                    </form>
-                </div>
+                            <div className="flex items-start gap-2 mt-8 text-md">
+                                <input
+                                    type="checkbox"
+                                    id="subscribe"
+                                    checked={agree}
+                                    onChange={handleNewsletterCheckbox}
+                                    className="w-4 h-4 appearance-none border-2 border-white bg-transparent checked:bg-white checked:border-white focus:outline-none cursor-pointer mt-1"
+                                    required
+                                />
+                                <label htmlFor="subscribe" className="text-white font-light font-avenir text-[18px]">
+                                    Yes, subscribe me to your newsletter. *
+                                </label>
+                            </div>
+                            <button
+                                type="submit"
+                                className="bg-white text-[#A04F3B] w-full font-semibold px-6 py-2 hover:bg-gray-100 transition mt-8"
+                            >
+                                Subscribe
+                            </button>
+                        </form>
+                    </div>
                 )}
             </div>
         </div>

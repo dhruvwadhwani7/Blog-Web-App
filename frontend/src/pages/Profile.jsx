@@ -4,20 +4,22 @@ import { useEffect, useState } from 'react';
 import { Bookmark, FileText, LogOut, Pencil, Settings } from 'lucide-react';
 import EditProfileModal from '../Components/EditProfileModal';
 import BlogForm from '../Components/BlogForm';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchMyBlogs } from '../redux/blogSlice';
+import Loader from '../Components/Loader';
 
 export default function Profile() {
-  const { user } = useSelector((state) => state.auth);
+  const { user,loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const getInitial = (name) => name?.charAt(0).toUpperCase();
   const { myBlogs } = useSelector(state => state.blogs);
-
+const savedBlogs = useSelector((state) => state.auth.savedBlogs);
   useEffect(() => {
     dispatch(fetchMyBlogs());
   }, [dispatch])
+
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-50">
@@ -69,11 +71,13 @@ export default function Profile() {
                 </div>
               </div>
               <div>
-                <p className="text-lg font-bold text-[#b4552c]">0</p>
+                <Link to={'/saved-blog'}>
+                <p className="text-lg font-bold text-[#b4552c]">{savedBlogs?.length || 0}</p>
                 <div className="flex items-center space-x-1">
                   <Bookmark className="w-4 h-4 text-black" />
                   <p className="text-sm font-bold text-gray-700">SAVED BLOGS</p>
                 </div>
+                </Link>
               </div>
             </div>
             <p className="mt-4 text-sm text-gray-600 italic">

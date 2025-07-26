@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from 'react';
+import Loader from '../Components/Loader';
 
 const Banner = lazy(() => import('../Components/Banner'));
 const CategoryBoxes = lazy(() => import('../Components/CategoryBoxes'));
@@ -7,7 +8,7 @@ const BlogForm = lazy(() => import('../Components/BlogForm'));
 
 const Home = () => {
   return (
-    <Suspense fallback={<div className="text-center py-10">Loading...</div>}>
+    <Suspense fallback={<div><Loader/></div>}>
       <Banner />
       <CategoryBoxes />
       <RecentBlogs />

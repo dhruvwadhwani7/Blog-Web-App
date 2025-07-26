@@ -6,7 +6,10 @@ import { Menu } from '@headlessui/react';
 import { EllipsisVertical, Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { getLikeCount, isPostLiked, likePost, unlikePost } from '../redux/likeSlice';
 import { fetchCommentsByPost } from '../redux/commentSlice';
-
+import Loader from '../Components/Loader';
+import { saveBlog, unsaveBlog } from '../redux/authSlice';
+import { FaRegBookmark, FaBookmark } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -14,7 +17,7 @@ const CategoryPage = () => {
   const { blogs = [], loading, error } = useSelector(state => state.blogs || {});
   const postIds = useMemo(() => blogs?.map(b => b._id), [blogs]);
   const { likeCounts, likeStatus } = useSelector((state) => state.likes);
-   const { commentCounts } = useSelector((state) => state.comments);
+  const { commentCounts } = useSelector((state) => state.comments);
 
   useEffect(() => {
     dispatch(fetchAllBlogs());
@@ -47,6 +50,27 @@ const CategoryPage = () => {
       dispatch(likePost(postId));
     }
   };
+  const { savedBlogs } = useSelector((state) => state.auth);
+  const isBlogSaved = (id) => {
+    return Array.isArray(savedBlogs) && savedBlogs.some((b) => b._id === id);
+  };
+
+  const handleSaveToggle = async (blog) => {
+    try {
+      const saved = isBlogSaved(blog._id);
+      if (saved) {
+        await dispatch(unsaveBlog(blog._id));
+        toast.info('Blog unsaved.', { position: 'bottom-right' });
+      } else {
+        await dispatch(saveBlog(blog._id));
+        toast.success('Blog saved!', { position: 'bottom-right' });
+      }
+    } catch (err) {
+      toast.error('Something went wrong.');
+    }
+  };
+
+  if (loading) return <Loader />
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-center mb-8 capitalize">{category} Blogs</h1>
@@ -66,8 +90,8 @@ const CategoryPage = () => {
             </Link>
 
             <div className="p-4 flex flex-col justify-between flex-1">
-              <div>
-                <div className="flex items-start gap-3 mb-2">
+              <div className="flex justify-between items-start gap-3 mb-2">
+                <div className="flex items-start gap-3">
                   {blog?.authorId?.avatar ? (
                     <img
                       src={`http://localhost:5000${blog.authorId.avatar}`}
@@ -87,24 +111,30 @@ const CategoryPage = () => {
                       {new Date(blog.createdAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
-                        year: 'numeric'
+                        year: 'numeric',
                       })} • {blog?.category.charAt(0).toUpperCase() + blog?.category.slice(1)}
                     </div>
                   </div>
                 </div>
 
-                <Link to={`/${blog._id}`}>
-                  <h3 className="text-lg font-bold mt-2">{blog.title}</h3>
-                  <p className="text-sm text-gray-700 mt-2">
-                    {getTruncatedText(blog.content, 120)}
-                  </p>
-                </Link>
+                {/* Save icon on the right */}
+                <button
+                  onClick={() => handleSaveToggle(blog)}
+                  title={isBlogSaved(blog._id) ? 'Saved' : 'Save'}
+                  className="text-gray-500 hover:text-black"
+                >
+                  {isBlogSaved(blog._id) ? (
+                    <FaBookmark className="text-[#A04F3B]" size={18} />
+                  ) : (
+                    <FaRegBookmark size={18} />
+                  )}
+                </button>
               </div>
 
               <div className="mt-4 border-t border-gray-400 pt-3 flex justify-between text-sm text-gray-500">
                 <span className="flex items-center gap-1">
                   <MessageCircle className="w-4 h-4" />
-                  {commentCounts[blog._id] || ''} 
+                  {commentCounts[blog._id] || ''}
                 </span>
                 <button
                   onClick={() => handleLikeToggle(blog._id)}

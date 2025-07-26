@@ -81,6 +81,18 @@ export const fetchMyBlogs = createAsyncThunk(
   }
 );
 
+export const fetchBlogsByUserId = createAsyncThunk(
+  'blogs/fetchByUserId',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/${id}`);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch blogs');
+    }
+  }
+);
+
 export const fetchBlogById = createAsyncThunk(
   'blogs/fetchById',
   async (id, thunkAPI) => {
@@ -98,6 +110,7 @@ const blogSlice = createSlice({
   initialState: {
     blogs: [],
     myBlogs: [],
+     blogsByUser: [],
     blog: null,
     loading: false,
     error: null,
@@ -128,6 +141,18 @@ const blogSlice = createSlice({
         const updated = action.payload;
         state.blogs = state.blogs.map(b => b._id === updated._id ? updated : b);
         state.myBlogs = state.myBlogs.map(b => b._id === updated._id ? updated : b);
+      })
+        .addCase(fetchBlogsByUserId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBlogsByUserId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.blogsByUser = action.payload;
+      })
+      .addCase(fetchBlogsByUserId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       .addCase(deleteBlog.fulfilled, (state, action) => {
         const id = action.payload;

@@ -16,3 +16,7 @@ body {
   overflow-x: hidden;
 }
 
+.Toastify__toast-container {
+  position: fixed !important;
+  z-index: 9999 !important;
+}

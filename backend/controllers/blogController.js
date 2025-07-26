@@ -99,3 +99,16 @@ export const getBlogsByUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getBlogsByUserId = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const blogs = await Blog.find({ authorId: userId }).sort({ createdAt: -1 });
+
+    res.status(200).json(blogs);
+  } catch (error) {
+    console.error('Error fetching blogs by user ID:', error);
+    res.status(500).json({ message: 'Failed to fetch blogs by user ID' });
+  }
+};

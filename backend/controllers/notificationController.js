@@ -1,8 +1,5 @@
 import Notification from '../models/Notification.js';
 
-// @desc    Create a notification
-// @route   POST /api/notifications
-// @access  Private
 export const createNotification = async (req, res) => {
   try {
     const { recipient, sender, type, post, message } = req.body;
@@ -26,9 +23,6 @@ export const createNotification = async (req, res) => {
   }
 };
 
-// @desc    Get all notifications for a user
-// @route   GET /api/notifications
-// @access  Private
 export const getUserNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ recipient: req.user._id })
@@ -42,9 +36,6 @@ export const getUserNotifications = async (req, res) => {
   }
 };
 
-// @desc    Mark a notification as read
-// @route   PUT /api/notifications/:id/read
-// @access  Private
 export const markAsRead = async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);

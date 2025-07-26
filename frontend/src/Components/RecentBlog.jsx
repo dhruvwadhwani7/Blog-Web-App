@@ -1,18 +1,26 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllBlogs } from '../redux/blogSlice';
 import { MessageCircle, Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getLikeCount, isPostLiked } from '../redux/likeSlice';
 import { fetchCommentsByPost } from '../redux/commentSlice';
+import { subscribeNewsletter } from '../redux/authSlice';
+import { toast } from 'react-toastify';
 
 const RecentBlogs = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate()
     const { blogs, loading } = useSelector((state) => state.blogs);
     const getInitial = (name) => name?.charAt(0).toUpperCase();
     const { likeCounts, likeStatus } = useSelector((state) => state.likes);
     const postIds = useMemo(() => blogs?.map(b => b._id), [blogs]);
     const { commentCounts } = useSelector((state) => state.comments);
+     const { subscribedEmail } = useSelector((state) => state.auth);
+      const { user, token } = useSelector((state) => state.auth);
+    const [submitError, setSubmitError] = useState('');
+    const [email, setEmail] = useState('');
+    const [agree, setAgree] = useState(false);
 
     useEffect(() => {
         dispatch(fetchAllBlogs());
@@ -27,6 +35,34 @@ const RecentBlogs = () => {
             });
         }
     }, [dispatch, postIds]);
+
+        useEffect(() => {
+            if (user?.email) {
+                setEmail(user.email);
+                if (subscribedEmail === user.email) {
+                    setAgree(true);
+                }
+            }
+        }, [user, subscribedEmail]);
+    
+          const handleNewsletterSubmit = async (e) => {
+                e.preventDefault();
+                if (!agree || !email) {
+                    toast.error('Please agree to subscribe and enter your email');
+                    return;
+                }
+        
+                const result = await dispatch(subscribeNewsletter(email));
+                if (subscribeNewsletter.fulfilled.match(result)) {
+                    toast.success(result.payload.message);
+                } else {
+                    toast.error(result.payload || 'Subscription failed');
+                }
+            };
+        
+            const handleNewsletterCheckbox = (e) => {
+                setAgree(e.target.checked);
+            };
 
     const handleLikeToggle = (postId) => {
         if (likeStatus[postId]) {
@@ -43,6 +79,13 @@ const RecentBlogs = () => {
         const text = div.textContent || div.innerText || '';
         return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     };
+    const handleExplore = () => {
+  if (user && token) {
+    navigate('/bloglist');
+  } else {
+    navigate('/signin');
+  }
+};
 
     return (
         <section className=" px-4 md:px-50">
@@ -53,7 +96,7 @@ const RecentBlogs = () => {
                             key={blog._id}
                             className="grid grid-cols-1 md:grid-cols-2 bg-white  shadow gap-4 items-start"
                         >
-                            <Link to={`/${blog._id}`} className='cursor-pointer'>
+                            <Link  to={user && token ? `/${blog._id}` : '/signin'} className='cursor-pointer'>
                                 <img
                                     src={`http://localhost:5000/${blog.media[0]}`}
                                     alt={blog.title}
@@ -63,7 +106,7 @@ const RecentBlogs = () => {
                             </Link>
                             <div className="flex flex-col py-4 px-4 justify-between h-full">
                                 <div>
-                                    <Link to={`/${blog._id}`} className='cursor-pointer'>
+                                    <Link   to={user && token ? `/${blog._id}` : '/signin'} className='cursor-pointer'>
                                         <div className="flex items-start gap-3 mb-2">
                                             {blog?.authorId?.avatar ? (
                                                 <img
@@ -93,7 +136,6 @@ const RecentBlogs = () => {
                                                 </div>
                                             </div>
                                         </div>
-
                                         <h3 className="text-xl font-bold mt-5">{blog.title}</h3>
                                         <p className="text-sm text-gray-700 mt-3">
                                             {getTruncatedText(blog.content, 150)}
@@ -124,26 +166,28 @@ const RecentBlogs = () => {
                             </div>
                         </div>
                     ))}
-                    <Link to="/bloglist">
-                        <button className="mt-6 px-6 cursor-pointer py-3 text-white bg-[#A04F3B] w-full max-w-sm font-semibold text-white transition-all duration-300">
+                    
+                        <button onClick={handleExplore} className="mt-6 px-6 cursor-pointer py-3 text-white bg-[#A04F3B] w-full max-w-sm font-semibold text-white transition-all duration-300">
                             Explore More
                         </button>
-                    </Link>
+                    
                 </div>
                 <div className="bg-[#FAEDE8] relative flex flex-col items-center justify-start py-10 px-4">
                     <div className="bg-[#A04F3B] text-white p-8 w-full max-w-sm">
                         <h2 className="text-[35px]  leading-[1.2] font-serif mb-6 text-center">
                             Join the <br /> Conversation
                         </h2>
-                        <form className="space-y-4 py-4 px-5">
+                        <form className="space-y-4 py-4 px-5" onSubmit={handleNewsletterSubmit}>
                             <div className='mt-6'>
                                 <label htmlFor="email" className="text-md font-medium">
                                     Email *
                                 </label>
                                 <input
-                                    type="email"
+                                   type="email"
                                     id="email"
-                                    className="mt-1 w-full px-4 py-2 bg-transparent border-b border-white placeholder-white text-white focus:outline-none"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="mt-1 w-full py-2 bg-transparent border-b border-white placeholder-white text-white focus:outline-none"
                                     placeholder=""
                                     required
                                 />
@@ -153,6 +197,8 @@ const RecentBlogs = () => {
                                 <input
                                     type="checkbox"
                                     id="subscribe"
+                                    checked={agree}
+                                    onChange={handleNewsletterCheckbox}
                                     className="w-4 h-4 appearance-none border-2 border-white bg-transparent checked:bg-white checked:border-white focus:outline-none cursor-pointer mt-1"
                                     required
                                 />
@@ -175,7 +221,7 @@ const RecentBlogs = () => {
                             <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
                                 <img src="./sport1.jpg" alt="1" className=" w-full h-40 object-cover" loading="lazy" />
                                 <img src="./tech.jpg" alt="2" className=" w-full h-40 object-cover" loading="lazy" />
-                                 <img src="./breakfast.jpg" alt="5" className=" w-full h-40 object-cover" loading="lazy" />
+                                <img src="./breakfast.jpg" alt="5" className=" w-full h-40 object-cover" loading="lazy" />
                                 <img src="./life.jpg" alt="3" className="w-full h-40 object-cover" loading="lazy" />
                                 <img src="./culture.jpg" alt="4" className=" w-full h-40 object-cover" loading="lazy" />
                                 <img src="./sweet.jpg" alt="6" className="w-full h-40 object-cover" loading="lazy" />

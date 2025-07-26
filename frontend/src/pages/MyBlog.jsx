@@ -7,10 +7,11 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { getLikeCount, isPostLiked, likePost, unlikePost } from '../redux/likeSlice';
 import { fetchCommentsByPost } from '../redux/commentSlice';
+import Loader from '../Components/Loader';
 
 const MyBlog = () => {
     const dispatch = useDispatch();
-    const { myBlogs } = useSelector(state => state.blogs);
+    const { myBlogs ,loading} = useSelector(state => state.blogs);
     const { likeCounts, likeStatus } = useSelector((state) => state.likes);
     const postIds = useMemo(() => myBlogs?.map(b => b._id), [myBlogs]);
     const { commentCounts } = useSelector((state) => state.comments);
@@ -53,7 +54,7 @@ const MyBlog = () => {
         return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     };
 
-    console.log(myBlogs);
+  if (loading) return <Loader/>
 
     return (
         <div className="px-6 md:px-16 py-8">

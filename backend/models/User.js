@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
   password: String,
   avatar: String,
   bio: String,
+  savedBlogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }],
+  subscribedToNewsletter: { type: Boolean, default: false },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   createdAt: { type: Date, default: Date.now },
 });

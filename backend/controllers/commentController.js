@@ -10,21 +10,16 @@ export const addComment = async (req, res) => {
     if (!content) {
       return res.status(400).json({ message: 'Comment content is required' });
     }
-
-    // 1. Create the comment
     const comment = await Comment.create({
       content,
       postId,
       userId: req.user._id,
     });
-
-    // 2. Fetch the blog post to get author
     const blog = await Blog.findById(postId);
     if (!blog) {
       return res.status(404).json({ message: 'Blog post not found' });
     }
-
-    // 3. Create a notification for the blog author (if not same as commenter)
+    
     if (blog.authorId.toString() !== req.user._id.toString()) {
       await Notification.create({
         recipient: blog.authorId,

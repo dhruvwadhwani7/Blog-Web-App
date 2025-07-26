@@ -6,7 +6,8 @@ import {
   getAllBlogs,
   getBlogById,
   getBlogsByUser,
-  upload
+  upload,
+  getBlogsByUserId
 } from '../controllers/blogController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -18,5 +19,6 @@ router.delete('/:id', protect, deleteBlog);
 router.get('/', getAllBlogs);
 router.get('/my-blogs', protect, getBlogsByUser);
 router.get('/:id', getBlogById);
+router.get('/users/:id', getBlogsByUserId);
 
 export default router;

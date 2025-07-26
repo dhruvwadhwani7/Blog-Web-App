@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema({
   },
   post: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Blog', // assuming 'Blog' is your model name
+    ref: 'Blog', 
   },
   message: {
     type: String,

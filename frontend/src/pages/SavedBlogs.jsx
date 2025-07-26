@@ -1,51 +1,39 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllBlogs } from '../redux/blogSlice';
-import { Heart, MessageCircle } from 'lucide-react';
+import { fetchSavedBlogs, saveBlog, unsaveBlog } from '../redux/authSlice';
 import { Link } from 'react-router-dom';
+import { Heart, MessageCircle } from 'lucide-react';
+import { FaRegBookmark, FaBookmark } from 'react-icons/fa';
 import { getLikeCount, isPostLiked, likePost, unlikePost } from '../redux/likeSlice';
 import { fetchCommentsByPost } from '../redux/commentSlice';
-import { FaRegBookmark, FaBookmark } from 'react-icons/fa';
-import { saveBlog, unsaveBlog } from '../redux/authSlice';
 import { toast } from 'react-toastify';
 import Loader from '../Components/Loader';
 
-const BlogList = () => {
+const SavedBlogs = () => {
   const dispatch = useDispatch();
-  const { blogs, loading, error } = useSelector((state) => state.blogs);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const categories = ['All', ...new Set(blogs.map(blog => blog.category))];
+  const { savedBlogs, loading, error } = useSelector((state) => state.auth);
   const { likeCounts, likeStatus } = useSelector((state) => state.likes);
   const { commentCounts } = useSelector((state) => state.comments);
-  const { savedBlogs } = useSelector((state) => state.auth);
-
-  const filteredBlogs = selectedCategory === 'All'
-    ? blogs
-    : blogs.filter(blog => blog.category === selectedCategory);
 
   useEffect(() => {
-    dispatch(fetchAllBlogs());
+    dispatch(fetchSavedBlogs());
   }, [dispatch]);
-  const postIds = useMemo(() => blogs?.map(b => b._id), [blogs]);
 
   useEffect(() => {
-    if (postIds && postIds.length > 0) {
-      postIds.forEach(postId => {
-        dispatch(getLikeCount(postId));
-        dispatch(isPostLiked(postId));
-        dispatch(fetchCommentsByPost(postId))
-      });
-    }
-  }, [dispatch, postIds]);
+    savedBlogs?.forEach((blog) => {
+      dispatch(getLikeCount(blog._id));
+      dispatch(isPostLiked(blog._id));
+      dispatch(fetchCommentsByPost(blog._id));
+    });
+  }, [dispatch, savedBlogs]);
 
-  if (loading) return <Loader />
-  if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
   const getTruncatedText = (html, maxLength = 150) => {
     const div = document.createElement('div');
     div.innerHTML = html;
     const text = div.textContent || div.innerText || '';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
+
   const handleLikeToggle = (postId) => {
     if (likeStatus[postId]) {
       dispatch(unlikePost(postId));
@@ -53,45 +41,20 @@ const BlogList = () => {
       dispatch(likePost(postId));
     }
   };
-  const isBlogSaved = (id) => {
-    return Array.isArray(savedBlogs) && savedBlogs.some((b) => b._id === id);
-  };
 
-  const handleSaveToggle = async (blog) => {
-    try {
-      const saved = isBlogSaved(blog._id);
-      if (saved) {
-        await dispatch(unsaveBlog(blog._id));
-        toast.info('Blog unsaved.', { position: 'bottom-right' });
-      } else {
-        await dispatch(saveBlog(blog._id));
-        toast.success('Blog saved!', { position: 'bottom-right' });
-      }
-    } catch (err) {
-      toast.error('Something went wrong.');
-    }
-  };
-
-
+  if (loading) return <Loader/>
+  if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex flex-wrap gap-3 mb-6">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-8 py-1 rounded-full border ${selectedCategory === cat
-              ? 'bg-[#b4552c] text-white border capitalize'
-              : 'bg-white text-gray-700 border-gray-300 capitalize'
-              } hover:bg-[#b4552c] hover:text-white transition cursor-pointer`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <h2 className="text-2xl font-semibold mb-6">Saved Blogs</h2>
+
+      {savedBlogs.length === 0 && (
+        <p className="text-gray-500">You haven’t saved any blogs yet.</p>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBlogs.map((blog) => (
+        {savedBlogs.map((blog) => (
           <div
             key={blog._id}
             className="bg-white rounded-md overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col"
@@ -134,17 +97,18 @@ const BlogList = () => {
                     </div>
                   </div>
 
-                  {/* Save icon on the right */}
                   <button
-                    onClick={() => handleSaveToggle(blog)}
-                    title={isBlogSaved(blog._id) ? 'Saved' : 'Save'}
+                    onClick={async () => {
+                      await dispatch(unsaveBlog(blog._id)); 
+                      dispatch(fetchSavedBlogs()); 
+                      toast.success('Blog removed from saved!', {
+                        position: 'bottom-right',
+                      });
+                    }}
                     className="text-gray-500 hover:text-black"
+                    title="Unsave"
                   >
-                    {isBlogSaved(blog._id) ? (
-                      <FaBookmark className="text-[#A04F3B]" size={18} />
-                    ) : (
-                      <FaRegBookmark size={18} />
-                    )}
+                    <FaBookmark className="text-[#A04F3B]" size={18} />
                   </button>
                 </div>
 
@@ -163,15 +127,14 @@ const BlogList = () => {
                 </span>
                 <button
                   onClick={() => handleLikeToggle(blog._id)}
-                  key={blog._id}
-                  className={`flex items-center gap-1 transition-colors cursor-pointer  ${likeStatus[blog._id] ? 'text-red-600' : 'text-gray-500'
+                  className={`flex items-center gap-1 transition-colors cursor-pointer ${likeStatus[blog._id] ? 'text-red-600' : 'text-gray-500'
                     } hover:text-red-600`}
                 >
                   <Heart
                     className="w-4 h-4 fill-current"
                     fill={likeStatus[blog._id] ? 'currentColor' : 'none'}
                   />
-                  <span className='text-gray-600'>{likeCounts[blog._id] ?? 0}</span>
+                  <span className="text-gray-600">{likeCounts[blog._id] ?? 0}</span>
                 </button>
               </div>
             </div>
@@ -182,4 +145,4 @@ const BlogList = () => {
   );
 };
 
-export default BlogList;
+export default SavedBlogs;

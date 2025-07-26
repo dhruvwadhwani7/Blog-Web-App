@@ -8,7 +8,12 @@ const initialState = {
   token: localStorage.getItem('token') || null,
   loading: false,
   error: null,
-  users: []
+  users: [],
+  savedBlogs: [],
+  selectedUser: null,
+  newsletterMessage: null,
+  newsletterError: null,
+  subscribedEmail: null
 };
 
 export const registerUser = createAsyncThunk(
@@ -51,7 +56,7 @@ export const createUserByAdmin = createAsyncThunk(
         },
       });
 
-      return res.data.user; // only return created user
+      return res.data.user; 
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || 'Failed to create user'
@@ -139,6 +144,32 @@ export const updateUser = createAsyncThunk(
   }
 );
 
+export const subscribeNewsletter = createAsyncThunk(
+  'auth/subscribeNewsletter',
+  async (email, thunkAPI) => {
+    try {
+      const res = await axios.post(`${API_URL}/subscribe`, { email });
+      return { message: res.data.message, email }; 
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Newsletter subscription failed'
+      );
+    }
+  }
+);
+
+export const fetchUserById = createAsyncThunk(
+  'auth/fetchUserById',
+  async (id, thunkAPI) => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/auth/user/${id}`);
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+);
+
 export const fetchAllUsers = createAsyncThunk(
   'auth/fetchAllUsers',
   async (_, thunkAPI) => {
@@ -146,7 +177,7 @@ export const fetchAllUsers = createAsyncThunk(
       const token = localStorage.getItem('token');
       const res = await axios.get(`${API_URL}users`, {
         headers: {
-          Authorization: `Bearer ${token}`, // ✅ Required if verifyToken is used
+          Authorization: `Bearer ${token}`, 
         },
       });
       return res.data;
@@ -171,6 +202,64 @@ export const deleteUser = createAsyncThunk(
       return userId;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
+
+export const saveBlog = createAsyncThunk(
+  'auth/saveBlog',
+  async (blogId, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+      const response = await axios.post(
+        'http://localhost:5000/api/auth/save-blog',
+        { blogId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+
+export const fetchSavedBlogs = createAsyncThunk(
+  'auth/fetchSavedBlogs',
+  async (_, { getState }) => {
+    console.log('🚀 fetchSavedBlogs thunk called');
+
+    const token = getState().auth.token;
+
+    const res = await axios.get('http://localhost:5000/api/auth/saved-blogs', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  }
+);
+
+export const unsaveBlog = createAsyncThunk(
+  'auth/unsaveBlog',
+  async (blogId, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+      const response = await axios.delete(
+        `http://localhost:5000/api/auth/unsave/${blogId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return { blogId };
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
@@ -202,14 +291,65 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(unsaveBlog.fulfilled, (state, action) => {
+        state.savedBlogs = state.savedBlogs.filter(
+          (blog) => blog._id !== action.payload.blogId
+        );
+      })
+      .addCase(fetchSavedBlogs.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSavedBlogs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.savedBlogs = action.payload;
+      })
+      .addCase(fetchSavedBlogs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(saveBlog.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(saveBlog.fulfilled, (state, action) => {
+        state.savedBlogs.push({ _id: action.payload.blogId });
+      })
+      .addCase(saveBlog.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(createUserByAdmin.fulfilled, (state, action) => {
-  state.loading = false;
-  state.users.push(action.payload); // update the user list
-})
-.addCase(createUserByAdmin.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-})
+        state.loading = false;
+        state.users.push(action.payload);
+      })
+      .addCase(createUserByAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchUserById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedUser = action.payload;
+      })
+      .addCase(fetchUserById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to fetch user';
+      })
+      .addCase(subscribeNewsletter.pending, (state) => {
+        state.newsletterMessage = null;
+        state.newsletterError = null;
+      })
+      .addCase(subscribeNewsletter.fulfilled, (state, action) => {
+        state.newsletterMessage = action.payload.message;
+        state.subscribedEmail = action.payload.email;
+      })
+      .addCase(subscribeNewsletter.rejected, (state, action) => {
+        state.newsletterError = action.payload;
+      })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
