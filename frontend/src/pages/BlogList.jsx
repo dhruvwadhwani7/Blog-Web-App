@@ -134,7 +134,6 @@ const BlogList = () => {
                     </div>
                   </div>
 
-                  {/* Save icon on the right */}
                   <button
                     onClick={() => handleSaveToggle(blog)}
                     title={isBlogSaved(blog._id) ? 'Saved' : 'Save'}

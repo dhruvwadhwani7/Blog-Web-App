@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 const categories = [
@@ -27,12 +28,13 @@ const categories = [
 ];
 
 const CategoryBoxes = () => {
+    const {user , token} = useSelector((state)=>state.auth)
     return (
         <div className="max-w-7xl mx-auto px-6 py-14">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
                 {categories.map((category, index) => (
                     <Link
-                        to={`/category/${category.title.toLowerCase()}`}>
+                        to={user && token ? `/category/${category.title.toLowerCase()}`:"signin"}>
                         <div
                             key={index}
                             className="relative group bg-[#f8eee8] px-8 py-10 h-64 border border-white border-gray-300 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-lg flex items-center justify-center"
