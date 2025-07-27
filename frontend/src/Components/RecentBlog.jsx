@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllBlogs } from '../redux/blogSlice';
 import { MessageCircle, Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getLikeCount, isPostLiked } from '../redux/likeSlice';
+import { getLikeCount, isPostLiked, likePost, unlikePost } from '../redux/likeSlice';
 import { fetchCommentsByPost } from '../redux/commentSlice';
 import { subscribeNewsletter } from '../redux/authSlice';
 import { toast } from 'react-toastify';
